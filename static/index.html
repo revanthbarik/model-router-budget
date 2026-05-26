@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Model Router · Budget Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon">◇</span>
+        <div>
+          <h1>Model Router</h1>
+          <p class="subtitle">Budget-aware routing dashboard</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="health-badge" class="badge badge-pending">Checking API…</span>
+        <button type="button" id="refresh-all" class="btn btn-ghost">Refresh all</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel panel-main">
+        <div class="panel-head">
+          <h2>Route a prompt</h2>
+          <p>See the difficulty score, selected tier, selected model, budget decision, and final answer in one place.</p>
+        </div>
+
+        <section class="top-metrics">
+          <article class="metric-card">
+            <span class="metric-label">Budget remaining</span>
+            <strong id="hero-budget-remaining">Loading…</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total requests</span>
+            <strong id="hero-total-requests">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total cost</span>
+            <strong id="hero-total-cost">$0.000000</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Average latency</span>
+            <strong id="hero-average-latency">0 ms</strong>
+          </article>
+        </section>
+
+        <form id="route-form" class="route-form">
+          <label for="prompt">Prompt input</label>
+          <textarea
+            id="prompt"
+            name="prompt"
+            rows="5"
+            placeholder="e.g. Explain how to design a scalable API with good security practices…"
+            required
+          ></textarea>
+          <div class="form-helper">
+            <span>Longer and more technical prompts usually route to stronger tiers.</span>
+            <span id="prompt-count">0 / 4000 chars</span>
+          </div>
+          <div class="form-actions">
+            <button type="submit" id="route-btn" class="btn btn-primary">
+              <span class="btn-label">Route prompt</span>
+              <span class="btn-spinner" hidden></span>
+            </button>
+            <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
+          </div>
+        </form>
+
+        <div id="route-error" class="alert alert-error" hidden></div>
+        <div id="route-blocked" class="alert alert-blocked" hidden>
+          Budget exceeded — request was not routed to the LLM.
+        </div>
+
+        <article id="route-result" class="result-card" hidden>
+          <div class="result-header">
+            <div>
+              <p class="eyebrow">Routing decision</p>
+              <h3>Latest result</h3>
+            </div>
+            <div class="result-meta">
+              <span id="result-budget-status" class="badge badge-pending"></span>
+              <span id="result-provider" class="badge badge-pending"></span>
+              <span id="result-llm-mode" class="badge badge-pending"></span>
+            </div>
+          </div>
+
+          <section class="decision-grid">
+            <article class="decision-card">
+              <span class="decision-label">Difficulty</span>
+              <strong id="result-difficulty">-</strong>
+              <span id="result-difficulty-score" class="decision-note">Score: 0</span>
+            </article>
+            <article class="decision-card">
+              <span class="decision-label">Selected tier</span>
+              <strong id="result-tier">-</strong>
+              <span class="decision-note">Routing tier chosen by the backend</span>
+            </article>
+            <article class="decision-card">
+              <span class="decision-label">Selected model</span>
+              <strong id="result-model">-</strong>
+              <span class="decision-note">Final target model</span>
+            </article>
+            <article class="decision-card">
+              <span class="decision-label">Estimated cost</span>
+              <strong id="result-cost">$0.000000</strong>
+              <span class="decision-note">Used for budget gating and final logging</span>
+            </article>
+            <article class="decision-card">
+              <span class="decision-label">Latency</span>
+              <strong id="result-latency">0 ms</strong>
+              <span class="decision-note">End-to-end backend route time</span>
+            </article>
+            <article class="decision-card">
+              <span class="decision-label">Tokens</span>
+              <strong id="result-total-tokens">0</strong>
+              <span id="result-token-breakdown" class="decision-note">In: 0 · Out: 0</span>
+            </article>
+          </section>
+
+          <section class="detail-section">
+            <div class="detail-header">
+              <h4>Difficulty reasons</h4>
+            </div>
+            <ul id="result-reasons" class="reason-list"></ul>
+          </section>
+
+          <section class="detail-section">
+            <div class="detail-header">
+              <h4>Answer</h4>
+            </div>
+            <pre id="result-answer" class="answer"></pre>
+          </section>
+        </article>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel" id="budget-panel">
+          <div class="panel-head panel-head-row">
+            <h2>Budget status</h2>
+            <button type="button" class="btn-icon" data-refresh="budget" title="Refresh budget">↻</button>
+          </div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar">
+              <div id="budget-used-bar" class="budget-used"></div>
+            </div>
+            <p id="budget-caption" class="muted">Loading…</p>
+          </div>
+          <div id="budget-status-pill" class="status-pill status-pending">Checking budget status</div>
+          <dl class="stats" id="budget-stats"></dl>
+          <p class="muted budget-helper">
+            Budget is calculated from billable requests in the current month. Fake, fallback, and blocked requests do not reduce budget.
+          </p>
+        </section>
+
+        <section class="panel" id="metrics-panel">
+          <div class="panel-head panel-head-row">
+            <h2>Metrics summary</h2>
+            <button type="button" class="btn-icon" data-refresh="metrics" title="Refresh metrics">↻</button>
+          </div>
+          <dl class="stats" id="metrics-stats"></dl>
+          <div id="metrics-mini-stats" class="mini-stats"></div>
+          <div id="metrics-breakdown" class="breakdown"></div>
+        </section>
+
+        <section class="panel panel-logs" id="logs-panel">
+          <div class="panel-head panel-head-row">
+            <h2>Recent logs</h2>
+            <button type="button" class="btn-icon" data-refresh="logs" title="Refresh logs">↻</button>
+          </div>
+          <div class="table-wrap">
+            <table class="logs-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Difficulty</th>
+                  <th>Tier</th>
+                  <th>Model</th>
+                  <th>Provider</th>
+                  <th>Mode</th>
+                  <th>Cost</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="logs-body">
+                <tr>
+                  <td colspan="8" class="empty">No logs yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel panel-history" id="history-panel">
+          <div class="panel-head panel-head-row">
+            <h2>Prompt History</h2>
+            <button type="button" class="btn-icon" data-refresh="logs" title="Refresh history">↻</button>
+          </div>
+          <div id="history-list" class="history-list">
+            <p class="muted">No prompt history yet.</p>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <p>
+        API docs still available at
+        <a href="/docs" target="_blank" rel="noopener">/docs</a>
+        · Fake mode: <code>USE_REAL_LLM=false</code> in <code>.env</code>
+      </p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
