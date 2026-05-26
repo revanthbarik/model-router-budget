@@ -1,145 +1,138 @@
-# model-router-budget
+# Model Router with Budgets
 
-A FastAPI backend with a simple dashboard UI for routing prompts by difficulty, checking budget before any LLM call, logging requests to SQLite, and supporting fake, DeepSeek, and OpenAI providers.
+A FastAPI-based AI backend that routes user prompts to different LLM providers based on prompt difficulty, estimated cost, and available monthly budget.
 
+The project supports fake mode, DeepSeek, and OpenAI providers. It also includes a simple dashboard UI for submitting prompts, viewing routing decisions, checking budget usage, and inspecting request history.
+
+---
+
+## Why I Built This
+
+LLM applications often send every request to the same powerful model, even when a cheaper model would be enough. This can increase API costs quickly, especially when users send many prompts.
+
+I built this project to understand how AI systems can make routing decisions before calling an LLM. The goal was to build a small backend system that thinks about:
+
+- How difficult the prompt is
+- Which model tier is suitable
+- Whether the request fits within the available budget
+- How much the request may cost
+- How to log usage, latency, and provider behavior
+
+---
+
+## The Problem
+
+Most basic AI apps directly call an LLM after receiving a prompt.
+
+This project adds a decision layer before the LLM call.
+
+Instead of blindly sending every request to a model, the system:
+
+1. Receives the user prompt
+2. Estimates the prompt difficulty
+3. Selects a suitable model/provider
+4. Checks the remaining monthly budget
+5. Calls the selected provider only if budget allows
+6. Logs the request, cost, latency, and response details
+
+This makes the project useful for understanding cost-aware AI backend design.
+
+---
+
+## Features
+
+- Prompt difficulty estimation
+- Budget-aware request blocking
+- Support for fake, DeepSeek, and OpenAI providers
+- SQLite logging for prompt history
+- Monthly budget tracking
+- Latency and cost tracking
+- Fallback to fake mode if a real provider fails
+- FastAPI backend
+- Built-in dashboard UI served by FastAPI
+- Swagger docs for API testing
+
+---
+
+## Tech Stack
+
+- Python
+- FastAPI
+- SQLite
+- Pydantic
+- Uvicorn
+- DeepSeek API
+- OpenAI API
+- HTML/CSS/JavaScript dashboard
+
+---
+
+## How It Works
+
+```text
+User Prompt
+    ↓
+FastAPI Backend
+    ↓
+Prompt Difficulty Estimator
+    ↓
+Model / Provider Selection
+    ↓
+Budget Check
+    ↓
+LLM Provider Call
+    ↓
+Cost + Latency Logging
+    ↓
+Dashboard / API Response
+
+
+#Budget Behavior:
 This demo uses one global monthly budget for the whole app.
+Budget is calculated from billable_cost for logs in the current calendar month only.
+Server restart does not reset the budget.
+A new month naturally starts a fresh budget window.
+Old logs stay in the database and still appear in prompt history.
+Fake, fallback, and blocked requests do not reduce budget.
+In a production version, this would usually become a per-user or per-workspace budget system.
 
-## Run the backend
+#How To Run The Project
 
-```bash
-cd /Users/revanthbarik/model-router-budget
+1.Clone the repository:
+git clone https://github.com/YOUR_USERNAME/model-router-budget.git
+cd model-router-budget
+
+2.Create and activate a virtual environment:
 python -m venv .venv
 source .venv/bin/activate
+For Windows:
+.venv\Scripts\activate
+
+3.Install dependencies:
 pip install -r requirements.txt
+Create your environment file:
 cp .env.example .env
+
+4.Run the backend:
 uvicorn app.main:app --reload
-```
+The backend runs at:
+http://127.0.0.1:8000
 
-The backend runs at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+What I Learned
+While building this project, I learned:
+How to structure a FastAPI backend
+How to design an LLM routing layer
+How to estimate prompt difficulty before calling a model
+How to track cost, latency, and provider behavior
+How to use SQLite for request logging
+How budget checks can be added before expensive API calls
+How fallback behavior improves reliability in AI applications
 
-## Run the UI
-
-The UI is served by FastAPI, so you do not need a separate frontend server.
-
-Open:
-
-- [http://127.0.0.1:8000/ui](http://127.0.0.1:8000/ui)
-- [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
-## Environment (`.env`)
-
-```env
-LLM_PROVIDER=fake
-DEEPSEEK_API_KEY=
-OPENAI_API_KEY=
-MONTHLY_BUDGET=1.00
-MAX_PROMPT_CHARS=4000
-```
-
-## Modes
-
-- Fake mode is the default and does not spend money.
-- DeepSeek mode is used when `LLM_PROVIDER=deepseek`.
-- OpenAI mode is used when `LLM_PROVIDER=openai`.
-- If a provider key is missing or the provider call fails, the app falls back safely to fake mode instead of crashing.
-- `USE_REAL_LLM=true` is still supported for backwards compatibility and maps to DeepSeek if `LLM_PROVIDER` is not set.
-
-## Monthly budget behavior
-
-- Budget is calculated from `billable_cost` for logs in the current calendar month only.
-- Server restart does not reset the budget.
-- A new month naturally starts a fresh budget window.
-- Old logs stay in the database and still appear in prompt history.
-- Fake, fallback, and blocked requests do not reduce budget.
-- In a production version, this would usually become a per-user or per-workspace budget system.
-
-## Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/ui` | Dashboard UI |
-| GET | `/health` | Health check |
-| POST | `/route` | Route a prompt |
-| GET | `/budget` | Budget status |
-| GET | `/logs` | Recent request logs |
-| GET | `/metrics` | Usage metrics |
-
-## Test fake mode
-
-1. Put this in `.env`:
-
-```env
-LLM_PROVIDER=fake
-DEEPSEEK_API_KEY=
-OPENAI_API_KEY=
-MONTHLY_BUDGET=1.00
-MAX_PROMPT_CHARS=4000
-```
-
-2. Start the backend.
-3. Open `/ui`.
-4. Submit a prompt.
-5. Confirm the result shows the `Fake` mode badge.
-
-## Test real DeepSeek mode
-
-1. Put this in `.env`:
-
-```env
-LLM_PROVIDER=deepseek
-DEEPSEEK_API_KEY=your_real_key_here
-OPENAI_API_KEY=
-MONTHLY_BUDGET=1.00
-MAX_PROMPT_CHARS=4000
-```
-
-2. Restart the backend.
-3. Submit a prompt from `/ui`.
-4. If DeepSeek works, the mode badge should show `DeepSeek Live`.
-5. If DeepSeek fails, the app should still return a fake fallback response without crashing.
-
-## Test OpenAI mode
-
-1. Put this in `.env`:
-
-```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your_real_key_here
-DEEPSEEK_API_KEY=
-MONTHLY_BUDGET=1.00
-MAX_PROMPT_CHARS=4000
-```
-
-2. Restart the backend.
-3. Submit a prompt from `/ui`.
-4. If OpenAI works, the mode badge should show `OpenAI Live`.
-5. If OpenAI fails, the app should still return a fake fallback response without crashing.
-
-## Test budget blocking
-
-1. Put this in `.env`:
-
-```env
-MONTHLY_BUDGET=0.0001
-LLM_PROVIDER=fake
-```
-
-2. Restart the backend.
-3. Submit a longer prompt.
-4. The request should show `blocked`.
-5. The dashboard should display the red warning message.
-6. The request should appear in logs and prompt history as blocked, and no provider call should be made.
-
-## Prompt history
-
-- The dashboard now includes a `Prompt History` section.
-- It uses expandable history items for recent prompts.
-- Each item shows the saved prompt, answer, provider, LLM mode, model, tier, difficulty, cost, latency, budget status, and timestamp.
-
-## Common issues
-
-- `Address already in use`: stop the old server process on port 8000 and rerun Uvicorn.
-- `ModuleNotFoundError`: make sure the virtual environment is activated and dependencies are installed.
-- `DeepSeek not working`: check `USE_REAL_LLM=true`, confirm the API key is set, then restart the backend.
-- `Prompt is too long`: either shorten the prompt or raise `MAX_PROMPT_CHARS` in `.env`.
-- `Budget exceeded`: raise `MONTHLY_BUDGET` in `.env` or lower the prompt size.
+Future Improvements
+Add user-based budgets instead of one global budget
+Add authentication
+Improve prompt difficulty estimation
+Add more model providers
+Add better analytics and charts
+Deploy the backend and dashboard
+Add Docker support
