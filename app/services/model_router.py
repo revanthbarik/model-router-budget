@@ -1,16 +1,17 @@
 PROVIDER_MODEL_MAP = {
+    # Fake mode uses the same real model IDs so simulated costs match live pricing.
     "fake": {
         "easy": {
             "selected_tier": "cheap",
-            "selected_model": "fake-cheap-model",
+            "selected_model": "gpt-4o-mini",
         },
         "medium": {
             "selected_tier": "mid",
-            "selected_model": "fake-mid-model",
+            "selected_model": "gpt-4o",
         },
         "hard": {
             "selected_tier": "expert",
-            "selected_model": "fake-expert-model",
+            "selected_model": "gpt-4o",
         },
     },
     "deepseek": {
@@ -30,15 +31,15 @@ PROVIDER_MODEL_MAP = {
     "openai": {
         "easy": {
             "selected_tier": "cheap",
-            "selected_model": "gpt-4.1-nano",
+            "selected_model": "gpt-4o-mini",
         },
         "medium": {
             "selected_tier": "mid",
-            "selected_model": "gpt-4.1-mini",
+            "selected_model": "gpt-4o",
         },
         "hard": {
             "selected_tier": "expert",
-            "selected_model": "gpt-4.1-mini",
+            "selected_model": "gpt-4o",
         },
     },
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home · Model Router</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=admin-tab-1" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon">◇</span>
+        <div>
+          <h1>Model Router</h1>
+          <p class="subtitle">Budget-aware LLM routing</p>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="Primary">
+        <a class="nav-link active" href="/home">Home</a>
+        <a class="nav-link" href="/chat">Chat</a>
+        <a class="nav-link" href="/admin">Admin</a>
+      </nav>
+      <div class="header-actions">
+        <span id="health-badge" class="badge badge-pending">Checking API…</span>
+        <button type="button" id="refresh-all" class="btn btn-ghost">Refresh</button>
+      </div>
+    </header>
+
+    <main class="layout layout-home">
+      <section class="panel panel-main">
+        <div class="panel-head">
+          <h2>Operations dashboard</h2>
+          <p>Live budget health, routing metrics, and recent request logs.</p>
+        </div>
+
+        <section class="top-metrics">
+          <article class="metric-card">
+            <span class="metric-label">Budget remaining</span>
+            <strong id="hero-budget-remaining">Loading…</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total requests</span>
+            <strong id="hero-total-requests">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Total cost</span>
+            <strong id="hero-total-cost">$0.00</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Average latency</span>
+            <strong id="hero-average-latency">0 ms</strong>
+          </article>
+        </section>
+
+        <div class="panel-stack">
+          <section class="panel panel-nested" id="metrics-panel">
+            <div class="panel-head panel-head-row">
+              <h2>Metrics summary</h2>
+              <button type="button" class="btn-icon" data-refresh="metrics" title="Refresh metrics">↻</button>
+            </div>
+            <dl class="stats" id="metrics-stats"></dl>
+            <div id="metrics-mini-stats" class="mini-stats"></div>
+            <div id="metrics-breakdown" class="breakdown"></div>
+          </section>
+
+          <section class="panel panel-nested" id="logs-panel">
+            <div class="panel-head panel-head-row">
+              <h2>Recent logs</h2>
+              <button type="button" class="btn-icon" data-refresh="logs" title="Refresh logs">↻</button>
+            </div>
+            <div class="table-wrap">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Difficulty</th>
+                    <th>Tier</th>
+                    <th>Model</th>
+                    <th>Provider</th>
+                    <th>Mode</th>
+                    <th>Cost</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="logs-body">
+                  <tr>
+                    <td colspan="8" class="empty">No logs yet — send a prompt from Chat</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel" id="budget-panel">
+          <div class="panel-head panel-head-row">
+            <h2>Budget status</h2>
+            <button type="button" class="btn-icon" data-refresh="budget" title="Refresh budget">↻</button>
+          </div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar">
+              <div id="budget-used-bar" class="budget-used"></div>
+            </div>
+            <p id="budget-caption" class="muted">Loading…</p>
+          </div>
+          <div id="budget-status-pill" class="status-pill status-pending">Checking budget status</div>
+          <dl class="stats" id="budget-stats"></dl>
+          <p class="muted budget-helper">
+            Budget changes are managed on the <a href="/admin">Admin</a> tab.
+            Forced overages can push remaining below $0.00.
+          </p>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <p>
+        <a href="/chat">Open Chat</a>
+        · API docs at <a href="/docs" target="_blank" rel="noopener">/docs</a>
+      </p>
+    </footer>
+
+    <script src="/static/common.js?v=admin-tab-1"></script>
+    <script src="/static/home.js?v=admin-tab-1"></script>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 from openai import OpenAI
 
 from app.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, OPENAI_API_KEY
+from app.services.cost_calculator import estimate_input_tokens
 
 
 def fake_llm(prompt: str, selected_model: str) -> str:
@@ -99,14 +100,15 @@ def fallback_fake_response(
 
 def call_llm(prompt: str, selected_model: str, provider: str) -> dict:
     if provider == "fake":
-        estimated_input_tokens = max(1, len(prompt.split()) * 2)
-        estimated_output_tokens = max(12, estimated_input_tokens // 2)
+        # Simulate realistic usage counts for local demos (not billed).
+        simulated_input = estimate_input_tokens(prompt)
+        simulated_output = max(12, simulated_input // 2)
         return {
             "answer": fake_llm(prompt, selected_model),
             "llm_mode": "fake",
-            "input_tokens": estimated_input_tokens,
-            "output_tokens": estimated_output_tokens,
-            "total_tokens": estimated_input_tokens + estimated_output_tokens,
+            "input_tokens": simulated_input,
+            "output_tokens": simulated_output,
+            "total_tokens": simulated_input + simulated_output,
         }
 
     if provider == "deepseek":

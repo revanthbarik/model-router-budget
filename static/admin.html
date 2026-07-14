@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · Model Router</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=admin-tab-1" />
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon">◇</span>
+        <div>
+          <h1>Model Router</h1>
+          <p class="subtitle">Admin controls</p>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="Primary">
+        <a class="nav-link" href="/home">Home</a>
+        <a class="nav-link" href="/chat">Chat</a>
+        <a class="nav-link active" href="/admin">Admin</a>
+      </nav>
+      <div class="header-actions">
+        <span id="health-badge" class="badge badge-pending">Checking API…</span>
+        <button type="button" id="refresh-all" class="btn btn-ghost">Refresh</button>
+      </div>
+    </header>
+
+    <main class="layout layout-admin">
+      <section class="panel admin-hero">
+        <div class="panel-head">
+          <h2>Budget administration</h2>
+          <p>
+            Change the global monthly spending limit from this page only.
+            Regular Home and Chat users only see remaining budget — not these controls.
+          </p>
+        </div>
+
+        <section class="top-metrics admin-metrics">
+          <article class="metric-card">
+            <span class="metric-label">Monthly limit</span>
+            <strong id="admin-monthly-limit">Loading…</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Billable used</span>
+            <strong id="admin-billable-used">$0.00</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Remaining</span>
+            <strong id="admin-remaining">$0.00</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Status</span>
+            <strong id="admin-status">—</strong>
+          </article>
+        </section>
+      </section>
+
+      <section class="panel" id="budget-panel">
+        <div class="panel-head panel-head-row">
+          <h2>Current budget</h2>
+          <button type="button" class="btn-icon" data-refresh="budget" title="Refresh budget">↻</button>
+        </div>
+        <div class="budget-bar-wrap">
+          <div class="budget-bar">
+            <div id="budget-used-bar" class="budget-used"></div>
+          </div>
+          <p id="budget-caption" class="muted">Loading…</p>
+        </div>
+        <div id="budget-status-pill" class="status-pill status-pending">Checking budget status</div>
+        <dl class="stats" id="budget-stats"></dl>
+
+        <div class="admin-budget-card">
+          <h4>Set monthly budget limit</h4>
+          <p class="admin-desc">
+            Saving confirms first, then updates the limit and clears request history so spend resets to $0.00 for the demo.
+          </p>
+          <div class="admin-limit-row">
+            <span>New limit</span>
+            <div class="admin-limit-input-wrap">
+              <span class="currency">$</span>
+              <input
+                type="number"
+                id="budgetLimitInput"
+                step="0.01"
+                min="0.01"
+                value="5.00"
+              />
+            </div>
+          </div>
+          <button id="updateLimitBtn" type="button">Save Budget Limit</button>
+          <p id="budgetLimitMessage" aria-live="polite" style="display: none;"></p>
+        </div>
+
+        <p class="muted budget-helper">
+          After a reset, return to Chat to start fresh conversations against the new limit.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        <a href="/home">Back to Home</a>
+        · <a href="/chat">Open Chat</a>
+      </p>
+    </footer>
+
+    <div id="budgetConfirmModal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card info">
+        <h3>Change monthly budget?</h3>
+        <p>
+          Do you really want to change the budget to
+          <strong id="confirmNewLimit">$0.00</strong>?
+        </p>
+        <p class="note">
+          This demo reset will clear all request history and set billable used back to $0.00.
+        </p>
+        <div class="modal-actions">
+          <button id="confirmBudgetCancelBtn" type="button" class="btn btn-ghost">Cancel</button>
+          <button id="confirmBudgetConfirmBtn" type="button" class="btn btn-primary">Yes, change budget</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/common.js?v=admin-tab-1"></script>
+    <script src="/static/admin.js?v=admin-tab-1"></script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat · Model Router</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=admin-tab-1" />
+  </head>
+  <body class="page-chat">
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon">◇</span>
+        <div>
+          <h1>Model Router</h1>
+          <p class="subtitle">Cost-aware chat</p>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="Primary">
+        <a class="nav-link" href="/home">Home</a>
+        <a class="nav-link active" href="/chat">Chat</a>
+        <a class="nav-link" href="/admin">Admin</a>
+      </nav>
+      <div class="header-actions">
+        <span class="chat-budget-pill">
+          Remaining <strong id="chat-budget-remaining">…</strong>
+        </span>
+        <span id="health-badge" class="badge badge-pending">Checking API…</span>
+      </div>
+    </header>
+
+    <main class="chat-shell">
+      <aside class="chat-history-panel">
+        <div class="chat-history-head">
+          <h2>History</h2>
+          <button type="button" id="refresh-history" class="btn-icon" title="Refresh history">↻</button>
+        </div>
+        <button type="button" id="new-chat-btn" class="btn btn-ghost new-chat-btn">New chat</button>
+        <div id="chat-history-list" class="chat-history-list">
+          <p class="muted">No chats yet.</p>
+        </div>
+      </aside>
+
+      <section class="chat-main panel">
+        <div class="chat-thread" id="chat-thread">
+          <div class="chat-empty" id="chat-empty">
+            <div class="chat-empty-mark" aria-hidden="true">◇</div>
+            <h2>Start a routed conversation</h2>
+            <p>
+              Your prompt is scored for difficulty, budget-checked, then sent to the best model tier.
+            </p>
+          </div>
+        </div>
+
+        <div id="route-error" class="alert alert-error" hidden></div>
+
+        <form id="route-form" class="chat-composer">
+          <label for="prompt" class="sr-only">Message</label>
+          <textarea
+            id="prompt"
+            name="prompt"
+            rows="3"
+            placeholder="Ask anything — try a short question or a harder system design prompt…"
+            required
+          ></textarea>
+          <div class="chat-composer-row">
+            <span id="prompt-count" class="muted">0 / 4000 chars</span>
+            <div class="form-actions">
+              <button type="button" id="clear-btn" class="btn btn-ghost">Clear</button>
+              <button type="submit" id="route-btn" class="btn btn-primary">
+                <span class="btn-label">Send</span>
+                <span class="btn-spinner" hidden></span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <div id="budgetWarningModal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card warn">
+        <h3>Budget warning</h3>
+        <p>
+          Your prompt's pre-call estimate is
+          <strong id="modalEstCost">$0.00</strong>,
+          which exceeds your remaining budget of
+          <strong id="modalRemBudget">$0.00</strong>.
+          Proceeding may deplete real-world API provider credits.
+        </p>
+        <p class="note">Would you like to bypass safety checks and force this request?</p>
+        <div class="modal-actions">
+          <button id="modalCancelBtn" type="button" class="btn btn-ghost">Cancel</button>
+          <button id="modalProceedBtn" type="button" class="btn btn-primary">Proceed Anyway</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/common.js?v=admin-tab-1"></script>
+    <script src="/static/chat.js?v=admin-tab-1"></script>
+  </body>
+</html>
